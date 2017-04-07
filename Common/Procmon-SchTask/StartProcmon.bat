@@ -1,0 +1,1 @@
+C:\mstrace\procmon /backingfile C:\mstrace\logfile.pml /NoFilter /AcceptEula /Minimized /Quiet

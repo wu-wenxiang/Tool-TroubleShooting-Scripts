@@ -1,0 +1,1 @@
+C:\mstrace\procmon /terminate
