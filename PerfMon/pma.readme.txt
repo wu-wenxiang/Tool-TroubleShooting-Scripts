@@ -1,0 +1,362 @@
+
+
+Please send me any comments, concerns or suggestions for improvements to AustinM and StevePar
+
+--------------
+Performance Monitor Analyzer v1.10    updated by StevePar@microsoft.com
+
+Added UAC elevation to enable writes to the registry on UAC enabled OS’s.  Another limitation I found was that you could not run two PMA summaries at the same time.  I have corrected that also, but keep in mind that running multiple instances concurrently will chew up quite a bit of CPU time
+
+
+--------------
+
+Performance Monitor Analyzer v1.00
+
+Author: Jeff Fanjoy, VMC Consulting (v-11jfan / JeffreyFan@vmc.com)
+
+Many thanks to Austin Mack (austinm@microsoft.com) and Yong Rhee (yongrhee@microsoft.com)
+for their assistance testing and making recommendations.  Without their help and support
+this script would not be anywhere near what it is today!
+
+
+Purpose:
+========
+This script is intended to provide a high level summary of key counters utilized by the
+Performance team.  Reviewing Perfmons has long been time consuming in attempting to collect
+data on items such as which process is the reason for a handle leak.  In addition it has
+always been time consuming to generate a report that is meaningful to both customers and
+other individuals reviewing a case.
+
+***** THIS SCRIPT IS NOT INTENDED TO REPLACE ANALYSIS OF A PERFORMANCE MONITOR LOG *****
+
+My hope is that this script will alleviate the time consuming aspects of analyzing a perfmon
+log and quickly identifying areas that should be have focus when performing the analysis.
+
+
+Installation:
+=============
+1.  Double-click the pma.vbs script to install the PerfFile handler context menu entry.
+2.  When prompted, select your desired default options
+
+    * = Select all options
+
+    Summary Options
+    ---------------
+       M = Memory Totals
+       P = Processor Totals
+       D = Physical Disk Totals
+       N = Network Interface Totals
+       T = Terminal Server Session Totals
+
+    Process Options
+    ---------------
+       H = Top 10 Processes by Handle Count
+       S = Top 10 Processes by Thread Count
+       B = Top 10 Processes by Private Bytes
+       V = Top 10 Processes by Virtual Bytes
+       W = Top 10 Processes by Working Set
+       C = Top 10 Processes by % Processor Time
+       I = Top 10 Processes by IO Data Bytes/sec
+
+    Examples
+    --------
+       MPDN         = Memory, Processor, Disk and NIC Summary only
+       MPDNTHSBVWCI = Everything (same as *)
+       HSBVWCI      = Top 10 Processes only
+       MPDH         = Memory, Processor, Disk and Top 10 by Handles
+
+
+Usage:
+======
+1.  Execute script either by Context Menu or from command prompt.
+    
+    Context Menu
+    ------------
+    Right-click any BLG or CSV file and select the "Open With Performance Monitor 
+    Analyzer" context menu option to begin analysis.
+
+
+    Command Prompt
+    --------------
+    cscript "x:\fullpath\pma.vbs" "x:\fullpath\perfmonlog.blg"
+
+
+2.  When prompted select processing options for this run (default will be set
+    to options provided during installation - see step 2 in Installation for
+    details of what each option does).
+
+
+Processed Data
+==============
+Processed data is left behind in the %TEMP% folder.  This folder is typically located
+in the user profile (C:\Documents and Settings\username\Local Settings\Temp).
+
+The files left behind will be overwritten with each processing of a Performance
+Monitor log.  The files are:
+
+pma_counters.$$$      The counters that were requested from the Perfmon log
+pma_outputfile.$$$    The CSV output from relog.exe processing
+pma_processlog.$$$    A history of everything displayed to the cscript window
+pma_resultsfile.$$$   Results text file- only created if writing to the folder with 
+                      the Perfmon log fails
+
+
+Known Issues
+============
+1.  Relog.exe has known issues across a UNC and as a result sometimes will fail when
+    attempting to process a log across a UNC.  Copying the file to a local hard disk
+    will generally mitigate this.
+
+2.  Relog.exe will sometimes produce output that has numerous problems including samples
+    out of order and missing samples.  There is nothing that can be done about this
+    but fortunately it doesn't occur often.  This script is a garbage in garbage out
+    processing of relog.exe data, so if the data is bad, the script won't know the
+    difference, although attempts are made to mitigate this as it processes.
+
+3.  The script assumes that a log file was generated on an English localized OS.  Any
+    log file generated on a non-English localized OS should process correctly however
+    it will not process any of the counters since the script will be looking for the
+    counter names in English only.  Handling localized languages other than English is
+    being considered for the next major version of the script depending on demand for
+    such a feature.
+
+4.  While the script is running it calls relog.exe (included with the OS) to convert 
+    the .BLG performance log file into a .CSV file format that can be read by  VBS 
+    script.  On occasion relog.exe takes a while to convert a file to .CSV format.  
+    The time taken by relog.exe and the time taken by VBS script are noted at the 
+    bottom of the output file.  The script runs at below normal priority as to not 
+    affect the performance of the system while running.  Script will work on W2K if
+    relog.exe is copied from WinXP or W2K3
+
+
+                                            Sample Output
+                                            =============
+
+
+Areas to Investigate
+====================
+   \Memory\Pages/sec
+        [Min: 11.402, Max: 1,083.929, Avg: 112.9]
+             - High values (~500) may be fine if disk subsystem is fast.
+             - Review % Idle Time and Avg. Disk sec/Transfer for I/O rates.
+
+   \PhysicalDisk(0 C:)\Split IO/Sec
+        [Min: 0, Max: 39.227, Avg: 2.021]
+             - Split IO operations make up 8.04% of Disk Transfers.
+             - Avg should be extremely close to 0.000.
+             - RAID may be too small/NTFS block too small.
+             - Disk may have moderate to heavy fragmentation.
+
+   \Process(_Total)\Handle Count
+        [Min: 40,942, Max: 46,781, Avg: 43,797]
+             - This may be a normal amount on Terminal Servers in Application Mode.
+             - Investigate individual applications using > 1,500 handles.
+
+   \Process(_Total)\Thread Count
+        [Min: 2,050, Max: 2,198, Avg: 2,153]
+             - This may be a normal amount on Terminal Servers in Application Mode.
+             - Investigate individual applications using > 150 threads.
+
+   \Processor(0)\% Processor Time
+        [Min: 23.75%, Max: 100%, Avg: 75.53%]
+             - Check individual processes for high usage.
+
+   \Processor(1)\% Processor Time
+        [Min: 18.75%, Max: 100%, Avg: 73.32%]
+             - Check individual processes for high usage.
+
+
+
+Performance Monitor Log Summary
+===============================
+
+Log Filename        : HOOD-SHORT - 5 SECOND INTERVAL_05101344.BLG
+Server Name         : HOOD
+Start Date & Time   : 05/10/2006 13:44:58 (Uptime was: 0d 9h 5m 57s)
+End Date & Time     : 05/10/2006 14:15:39 (Uptime was: 0d 9h 36m 38s)
+Log Duration        : 0d 0h 30m 41s 
+Total Samples       : 365
+Sample Interval     : 0d 0h 0m 5s (Average - sample intervals were varied)
+
+
+Memory                                  Minimum      Maximum      Average
+=========================================================================
+Available Bytes                    :      539MB |      731MB |      639MB
+Pool Paged Bytes                   :      115MB |      117MB |      116MB
+Pool NonPaged Bytes                :       47MB |       50MB |       48MB
+Free System PTEs                   :    132,932 |    133,968 |    133,372
+Handle Count                       :     40,942 |     46,781 |     43,797
+Thread Count                       :      2,050 |      2,198 |      2,153
+Private Bytes                      :    1,030MB |    1,288MB |    1,143MB
+Virtual Bytes                      :    9,465MB |   11,169MB |   10,227MB
+Working Set                        :    1,452MB |    1,742MB |    1,616MB
+Cache Bytes                        :      230MB |      248MB |      237MB
+Committed Bytes                    :    1,361MB |    1,639MB |    1,489MB
+Commit Limit                       :    3,940MB |    3,940MB |    3,940MB
+% Committed Bytes Used             :        35% |        42% |        38%
+Pages/sec                          :     11.402 |  1,083.929 |      112.9
+
+
+Processor                               Minimum      Maximum      Average
+=========================================================================
+Processor Queue Length             :          0 |         17 |          3
+% Processor Time                   :     21.25% |       100% |     74.43%
+   Processor: 0                    :     23.75% |       100% |     75.53%
+   Processor: 1                    :     18.75% |       100% |     73.32%
+% DPC Time                         :      0.47% |      6.92% |      2.61%
+   Processor: 0                    :         0% |      8.49% |      2.43%
+   Processor: 1                    :         0% |      6.85% |      2.79%
+% Interrupt Time                   :         0% |      1.73% |      0.56%
+   Processor: 0                    :         0% |      2.19% |      0.43%
+   Processor: 1                    :         0% |      2.49% |      0.68%
+
+
+Physical Disk                           Minimum      Maximum      Average
+=========================================================================
+% Idle Time                        :     44.28% |    100.18% |      96.4%
+   Disk: 0 C:                      :     44.28% |    100.18% |      96.4%
+Avg. Disk sec/Transfer             :          0 |      0.037 |      0.003
+   Disk: 0 C:                      :          0 |      0.037 |      0.003
+Disk Bytes/sec                     :       14KB |    4,305KB |      760KB
+   Disk: 0 C:                      :       14KB |    4,305KB |      760KB
+Avg. Disk Queue Length             :          0 |      0.594 |       0.07
+   Disk: 0 C:                      :          0 |      0.594 |       0.07
+Split IO/Sec                       :          0 |     39.227 |      2.021
+   Disk: 0 C:                      :          0 |     39.227 |      2.021
+Disk Transfers/Sec                 :      0.598 |     280.08 |     25.122
+   Disk: 0 C:                      :      0.598 |     280.08 |     25.122
+
+
+Network Interface                       Minimum      Maximum      Average
+=========================================================================
+Bytes Total/sec
+   Intel [R] Advanced Networking Se:      284KB |    4,177KB |    1,361KB
+   MS TCP Loopback interface       :        0KB |      169KB |        2KB
+Current Bandwidth
+   Intel [R] Advanced Networking Se:  1,000Mbit |  1,000Mbit |  1,000Mbit
+   MS TCP Loopback interface       :     10Mbit |     10Mbit |     10Mbit
+Output Queue Length
+   Intel [R] Advanced Networking Se:          0 |         22 |          0
+   MS TCP Loopback interface       :          0 |          0 |          0
+Packets/sec
+   Intel [R] Advanced Networking Se:        585 |      6,575 |      1,899
+   MS TCP Loopback interface       :          0 |        346 |         19
+Packets Received Discarded
+   Intel [R] Advanced Networking Se:          0 |          0 |          0
+   MS TCP Loopback interface       :          0 |          0 |          0
+Packets Received Errors
+   Intel [R] Advanced Networking Se:          0 |          0 |          0
+   MS TCP Loopback interface       :          0 |          0 |          0
+
+
+TOP 10: Handle Count                    Minimum      Maximum      Average
+=========================================================================
+1.  SERVICES                       :      1,291 |      1,540 |      1,378
+2.  ImaSrv                         :        770 |        811 |        791
+3.  javaw                          :        792 |        805 |        792
+4.  svchost                        :        728 |        777 |        757
+5.  termsrv                        :        683 |        717 |        701
+6.  LSASS                          :        666 |        715 |        696
+7.  OUTLOOK#1                      :        596 |        679 |        603
+8.  csrss                          :        616 |        678 |        641
+9.  WINWORD                        :        655 |        659 |        655
+10. OUTLOOK#10                     :        313 |        639 |        415
+
+
+TOP 10: Thread Count                    Minimum      Maximum      Average
+=========================================================================
+1.  System                         :        141 |        153 |        144
+2.  termsrv                        :         92 |         96 |         94
+3.  ImaSrv                         :         61 |         65 |         62
+4.  SERVICES                       :         51 |         56 |         54
+5.  SavService                     :         47 |         49 |         49
+6.  spoolsv                        :         13 |         33 |         16
+7.  OUTLOOK#1                      :         13 |         30 |         14
+8.  WINLOGON#5                     :         20 |         27 |         20
+9.  msdtc                          :         26 |         26 |         26
+10. svchost#1                      :         20 |         25 |         22
+
+
+TOP 10: Private Bytes                   Minimum      Maximum      Average
+=========================================================================
+1.  WINWORD#5                      :        0MB |       86MB |       12MB
+2.  firefox                        :       77MB |       86MB |       79MB
+3.  WINWORD#1                      :       37MB |       72MB |       41MB
+4.  MSPUB                          :        0MB |       69MB |       10MB
+5.  spoolsv                        :       47MB |       48MB |       47MB
+6.  WINWORD#6                      :        0MB |       44MB |       16MB
+7.  tethereal                      :        0MB |       43MB |       43MB
+8.  javaw                          :       40MB |       41MB |       40MB
+9.  mspaint                        :       27MB |       38MB |       32MB
+10. SavService                     :       32MB |       33MB |       32MB
+
+
+TOP 10: Virtual Bytes                   Minimum      Maximum      Average
+=========================================================================
+1.  WINWORD#1                      :      225MB |      283MB |      236MB
+2.  WINWORD                        :      253MB |      253MB |      253MB
+3.  ImaSrv                         :      228MB |      232MB |      229MB
+4.  WINWORD#5                      :        0MB |      226MB |      124MB
+5.  javaw                          :      214MB |      215MB |      214MB
+6.  WINWORD#2                      :      185MB |      200MB |      188MB
+7.  MSPUB                          :        0MB |      190MB |      115MB
+8.  firefox                        :      157MB |      177MB |      167MB
+9.  WINWORD#3                      :      170MB |      176MB |      175MB
+10. OUTLOOK#1                      :      154MB |      176MB |      155MB
+
+
+TOP 10: Working Set                     Minimum      Maximum      Average
+=========================================================================
+1.  WINWORD#5                      :        0MB |       98MB |       20MB
+2.  WINWORD#1                      :       60MB |       95MB |       66MB
+3.  MSPUB                          :        0MB |       62MB |       18MB
+4.  WINWORD#6                      :        0MB |       56MB |       25MB
+5.  spoolsv                        :       51MB |       51MB |       51MB
+6.  WINWORD                        :       45MB |       45MB |       45MB
+7.  OUTLOOK#2                      :       33MB |       45MB |       39MB
+8.  firefox                        :        1MB |       44MB |       22MB
+9.  WINWORD#2                      :       42MB |       43MB |       42MB
+10. Contribute                     :       42MB |       43MB |       42MB
+
+
+TOP 10: % Processor Time                Minimum      Maximum      Average
+=========================================================================
+1.  wmplayer                       :      7.96% |     59.32% |     38.71%
+2.  csrss#16                       :         0% |     89.72% |     17.31%
+3.  tethereal                      :         0% |     15.58% |      8.31%
+4.  WINWORD#5                      :         0% |      86.6% |      8.02%
+5.  System                         :      0.94% |     16.82% |      7.75%
+6.  firefox#6                      :         0% |     64.87% |      6.38%
+7.  javaw                          :         0% |     16.82% |      6.32%
+8.  vncviewer                      :         0% |     13.75% |      4.12%
+9.  MSPUB                          :         0% |     62.62% |       3.7%
+10. csrss#12                       :         0% |     20.62% |      3.62%
+
+
+TOP 10: IO Data Bytes                   Minimum      Maximum      Average
+=========================================================================
+1.  tethereal                      :        0KB |    3,833KB |    2,135KB
+2.  wmplayer                       :       39KB |      359KB |      179KB
+3.  SavService                     :        0KB |    2,391KB |       94KB
+4.  regsvc                         :       35KB |      137KB |       69KB
+5.  csrss#15                       :        0KB |   23,618KB |       66KB
+6.  csrss#16                       :        0KB |       79KB |       44KB
+7.  firefox#7                      :        0KB |      953KB |       32KB
+8.  MSPUB                          :        0KB |    1,461KB |       27KB
+9.  wfshell#3                      :        0KB |    9,191KB |       25KB
+10. wfica32#2                      :        0KB |    6,726KB |       21KB
+
+
+
+
+Report generated by   : Performance Monitor Analyzer v1.00
+Written By            : Jeff Fanjoy, VMC Consulting (v-11jfan / JeffreyFan@vmc.com)
+Generated on          : 5/19/2006 1:37:20 AM
+Log processing time   : 94 second(s).
+Relog processing time : 59 second(s).
+Total Counters        : 1704
+Total Processes       : 236
+
+To remove the 'Open With Performance Monitor Analyzer' context menu delete the following registry key(s):
+   BLG context menu   : HKCR\PerfFile\shell\PMA
+   CSV context menu   : HKCR\.csv\Excel.CSV\shell\PMA
