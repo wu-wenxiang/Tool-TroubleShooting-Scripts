@@ -8,7 +8,15 @@ aFile = os.path.join(LOG_DIR, r'u_ex%s.log' % DATE)
 
 from collections import Counter
 
-aList = [line.split() for line in open(aFile) if line.startswith(r'2017-')]
+aList = [line for line in open(aFile) if line.startswith(r'20')]
+
+import re
+reCmp = re.compile(r'^\S+\s+1[2-3]:')
+aList = [i for i in aList if reCmp.search(i)]
+
+aList = [line.split() for line in aList]
+
+
 bList = [line[1] for line in aList]
 bCounter = Counter(bList)
 cList = [r':'.join(line.split(r':')[:2]) for line in bList]
