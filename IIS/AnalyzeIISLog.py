@@ -1,4 +1,10 @@
-aFile = r"C:\Users\wenw\Desktop\0619\132\log\u_ex170606.log"
+DATE = '170618'
+LOG_DIR = r'C:\Users\wenw\Desktop\0619\132\log'
+STAT_DIR = r'C:\Users\wenw\Desktop\IIS-log'
+
+import os
+
+aFile = os.path.join(LOG_DIR, r'u_ex%s.log' % DATE)
 
 from collections import Counter
 
@@ -32,6 +38,7 @@ for k in sorted(dCounter):
     secStat.write('%s, %s' % (k, dCounter[k]) + '\n')
 '''
 
+
 aDict = {}
 for line in aList:
     aDict.setdefault(line[8], [])
@@ -47,8 +54,32 @@ for k,v in aDict.items():
     avg = sum(v) / len(v)
     bDict[k] = [reqNum, avg, req30Num, req30Rate, req10Num, req10Rate]
 
-secStat = open(r'C:\Users\wenw\Desktop\IIS-log\170606-IP-stat.csv', 'w')
+secStat = open(os.path.join(STAT_DIR, r'%s-IP-stat.csv' % DATE), 'w')
 secStat.write('IP, Requests, Average, 30+sec, 30+Percent, 10+Sec, 10+Percent\n')
+for k in sorted(bDict): #, key=(lamba x:bDict[x][0]), reverse=True):
+    v = ['%s' % i for i in bDict[k]]
+    v = ', '.join(v)
+    secStat.write('%s, %s' % (k, v) + '\n')
+
+
+aDict = {}
+for line in aList:
+    k = ' '.join(line[3:5])
+    aDict.setdefault(k, [])
+    aDict[k].append(int(line[-1]))
+
+bDict = {}
+for k,v in aDict.items():
+    reqNum = len(v)
+    req30Num = len([i for i in v if i>30000])
+    req30Rate = float(req30Num)/reqNum
+    req10Num = len([i for i in v if i>10000])
+    req10Rate = float(req10Num)/reqNum
+    avg = sum(v) / len(v)
+    bDict[k] = [reqNum, avg, req30Num, req30Rate, req10Num, req10Rate]
+
+secStat = open(os.path.join(STAT_DIR, r'%s-URL-stat.csv' % DATE), 'w')
+secStat.write('URL, Requests, Average, 30+sec, 30+Percent, 10+Sec, 10+Percent\n')
 for k in sorted(bDict): #, key=(lamba x:bDict[x][0]), reverse=True):
     v = ['%s' % i for i in bDict[k]]
     v = ', '.join(v)
