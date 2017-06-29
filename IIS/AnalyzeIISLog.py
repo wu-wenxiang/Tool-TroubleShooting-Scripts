@@ -1,6 +1,6 @@
-DATE = '170620'
-LOG_DIR = r'C:\Users\wenw\Desktop\117041115583204-Opera-IIS-Hang\log'
-STAT_DIR = r'C:\Users\wenw\Desktop\IIS-log'
+DATE = '170629'
+LOG_DIR = r'C:\Users\wenw\Desktop\117041115583204-Opera-IIS-Hang\20170629\IISlog'
+STAT_DIR = r'C:\Users\wenw\Desktop\117041115583204-Opera-IIS-Hang\20170629\IISlog'
 
 import os
 
@@ -10,10 +10,11 @@ from collections import Counter
 
 aList = [line for line in open(aFile) if line.startswith(r'20')]
 
+'''
 import re
 reCmp = re.compile(r'^\S+\s+1[2-3]:')
 aList = [i for i in aList if reCmp.search(i)]
-
+'''
 aList = [line.split() for line in aList]
 
 
@@ -23,16 +24,26 @@ cList = [r':'.join(line.split(r':')[:2]) for line in bList]
 cCounter = Counter(cList)
 
 secStat = open(os.path.join(STAT_DIR, r'%s-sec.csv' % DATE), 'w')
+for i in range(24):
+    for j in range(60):
+        for k in range(60):
+            bCounter.setdefault('%02d:%02d:%02d' % (i,j,k), 0)
 for k in sorted(bCounter):
     secStat.write('%s, %s' % (k, bCounter[k]) + '\n')
 
 secStat = open(os.path.join(STAT_DIR, r'%s-min.csv' % DATE), 'w')
+for i in range(24):
+    for j in range(60):
+        cCounter.setdefault('%02d:%02d' % (i,j), 0)
 for k in sorted(cCounter):
     secStat.write('%s, %s' % (k, cCounter[k]) + '\n')
 
 dList = [line[1] for line in aList if int(line[-1]) > 10000]
 dList = [r':'.join(line.split(r':')[:2]) for line in dList]
 dCounter = Counter(dList)
+for i in range(24):
+    for j in range(60):
+        dCounter.setdefault('%02d:%02d' % (i,j), 0)
 secStat = open(os.path.join(STAT_DIR, r'%s-10sec.csv' % DATE), 'w')
 for k in sorted(dCounter):
     secStat.write('%s, %s' % (k, dCounter[k]) + '\n')
@@ -40,6 +51,9 @@ for k in sorted(dCounter):
 dList = [line[1] for line in aList if int(line[-1]) > 30000]
 dList = [r':'.join(line.split(r':')[:2]) for line in dList]
 dCounter = Counter(dList)
+for i in range(24):
+    for j in range(60):
+        dCounter.setdefault('%02d:%02d' % (i,j), 0)
 secStat = open(os.path.join(STAT_DIR, r'%s-30sec.csv' % DATE), 'w')
 for k in sorted(dCounter):
     secStat.write('%s, %s' % (k, dCounter[k]) + '\n')
