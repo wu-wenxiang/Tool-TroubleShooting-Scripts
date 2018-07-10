@@ -1,6 +1,6 @@
-DATE = '170704'
+﻿DATE = '180601'
 LOG_FILE = r'u_ex%s.log' % DATE
-LOG_DIR = r'C:\local\github-mine\Training-Case-Triage\case\117041115583204-IIS-Performance-Tuning\0705\iislog'
+LOG_DIR = r'C:\Users\wenw\Downloads\H4A-6-1\5.31-6.1\ToMS137'
 STAT_DIR = LOG_DIR
 
 import os
@@ -9,7 +9,7 @@ from collections import Counter
 
 def _buildSecStat(lineList, postfix):
     aCounter = Counter(lineList)
-    with open(os.path.join(STAT_DIR, r'%s-%s.csv' % (DATE, postfix)), 'w') as outputStat:
+    with open(os.path.join(STAT_DIR, r'%s-%s.csv' % (DATE, postfix)), 'w', encoding='utf-8') as outputStat:
         for i in range(24):
             for j in range(60):
                 for k in range(60):
@@ -19,7 +19,7 @@ def _buildSecStat(lineList, postfix):
 
 def _buildMinStat(lineList, postfix):
     aCounter = Counter(lineList)
-    outputStat = open(os.path.join(STAT_DIR, r'%s-%s.csv' % (DATE, postfix)), 'w')
+    outputStat = open(os.path.join(STAT_DIR, r'%s-%s.csv' % (DATE, postfix)), 'w', encoding='utf-8')
     for i in range(24):
         for j in range(60):
             aCounter.setdefault('%02d:%02d' % (i,j), 0)
@@ -61,7 +61,7 @@ def buildIPStat(lineList):
         req10Rate = float(req10Num)/reqNum
         avg = sum(v) / len(v)
         bDict[k] = [reqNum, avg, req30Num, req30Rate, req10Num, req10Rate]
-    with open(os.path.join(STAT_DIR, r'%s-IP-stat.csv' % DATE), 'w') as outputStat:
+    with open(os.path.join(STAT_DIR, r'%s-IP-stat.csv' % DATE), 'w', encoding='utf-8') as outputStat:
         outputStat.write('IP, Requests, Average, 30+sec, 30+Percent, 10+Sec, 10+Percent\n')
         for k in sorted(bDict): #, key=(lamba x:bDict[x][0]), reverse=True):
             v = ['%s' % i for i in bDict[k]]
@@ -71,7 +71,7 @@ def buildIPStat(lineList):
 def buildURLStat(lineList):
     aDict = {}
     for line in lineList:
-        k = ' '.join(line[3:5])
+        k = ' '.join(line[4:6])
         aDict.setdefault(k, [])
         aDict[k].append(int(line[-1]))
     bDict = {}
@@ -83,7 +83,7 @@ def buildURLStat(lineList):
         req10Rate = float(req10Num)/reqNum
         avg = sum(v) / len(v)
         bDict[k] = [reqNum, avg, req30Num, req30Rate, req10Num, req10Rate]
-    secStat = open(os.path.join(STAT_DIR, r'%s-URL-stat.csv' % DATE), 'w')
+    secStat = open(os.path.join(STAT_DIR, r'%s-URL-stat.csv' % DATE), 'w', encoding='utf-8')
     secStat.write('URL, Requests, Average, 30+sec, 30+Percent, 10+Sec, 10+Percent\n')
     for k in sorted(bDict): #, key=(lamba x:bDict[x][0]), reverse=True):
         v = ['%s' % i for i in bDict[k]]
@@ -92,7 +92,7 @@ def buildURLStat(lineList):
 
 if __name__ == '__main__':
     logFile = os.path.join(LOG_DIR, LOG_FILE)
-    lineList = [line for line in open(logFile) if line.startswith(r'20')]
+    lineList = [line for line in open(logFile, encoding='utf-8') if line.startswith(r'20')]
     # reCmp = re.compile(r'^\S+\s+1[2-3]:')
     # aList = [i for i in aList if reCmp.search(i)]
     lineList = [line.split() for line in lineList]
