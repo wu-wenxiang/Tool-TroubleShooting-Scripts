@@ -1,6 +1,6 @@
-﻿DATE = '180601'
+DATE = '180713'
 LOG_FILE = r'u_ex%s.log' % DATE
-LOG_DIR = r'C:\Users\wenw\Downloads\H4A-6-1\5.31-6.1\ToMS137'
+LOG_DIR = r'C:\Users\wenw\Desktop\118042818090616-IIS-Longtime-Response\117'
 STAT_DIR = LOG_DIR
 
 import os
@@ -96,6 +96,9 @@ if __name__ == '__main__':
     # reCmp = re.compile(r'^\S+\s+1[2-3]:')
     # aList = [i for i in aList if reCmp.search(i)]
     lineList = [line.split() for line in lineList]
+    tmp = len(lineList)
+    lineList = [i for i in lineList if len(i) == 14]
+    print('Ignore :: ', tmp - len(lineList))
 
     buildSecStat(lineList)
     buildMinStat(lineList)
