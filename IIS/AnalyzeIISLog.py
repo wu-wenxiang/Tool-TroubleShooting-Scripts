@@ -1,6 +1,6 @@
-DATE = '180713'
+DATE = '180716'
 LOG_FILE = r'u_ex%s.log' % DATE
-LOG_DIR = r'C:\Users\wenw\Desktop\118042818090616-IIS-Longtime-Response\117'
+LOG_DIR = r'C:\Users\wenw\Desktop\118042818090616-IIS-Longtime-Response\IIS_log\116'
 STAT_DIR = LOG_DIR
 
 import os
@@ -71,7 +71,7 @@ def buildIPStat(lineList):
 def buildURLStat(lineList):
     aDict = {}
     for line in lineList:
-        k = ' '.join(line[4:6])
+        k = line[4]
         aDict.setdefault(k, [])
         aDict[k].append(int(line[-1]))
     bDict = {}
