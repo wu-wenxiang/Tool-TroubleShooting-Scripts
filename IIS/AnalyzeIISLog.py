@@ -1,6 +1,6 @@
 DATE = '180716'
 LOG_FILE = r'u_ex%s.log' % DATE
-LOG_DIR = r'C:\Users\wenw\Desktop\118042818090616-IIS-Longtime-Response\IIS_log\116'
+LOG_DIR = r'C:\Users\wenw\Desktop\118042818090616-IIS-Longtime-Response\H4A\W3SVC1_12'
 STAT_DIR = LOG_DIR
 
 import os
@@ -41,6 +41,12 @@ def buildMinStat_10s(lineList):
     lineList = [r':'.join(line.split(r':')[:2]) for line in lineList]
     _buildMinStat(lineList, postfix)
 
+def buildMinStat_20s(lineList):
+    postfix = '20sec'
+    lineList = [line[1] for line in lineList if int(line[-1]) > 20000]
+    lineList = [r':'.join(line.split(r':')[:2]) for line in lineList]
+    _buildMinStat(lineList, postfix)
+
 def buildMinStat_30s(lineList):
     postfix = '30sec'
     lineList = [line[1] for line in lineList if int(line[-1]) > 30000]
@@ -71,7 +77,7 @@ def buildIPStat(lineList):
 def buildURLStat(lineList):
     aDict = {}
     for line in lineList:
-        k = line[4]
+        k = line[5]
         aDict.setdefault(k, [])
         aDict[k].append(int(line[-1]))
     bDict = {}
@@ -79,12 +85,14 @@ def buildURLStat(lineList):
         reqNum = len(v)
         req30Num = len([i for i in v if i>30000])
         req30Rate = float(req30Num)/reqNum
+        req20Num = len([i for i in v if i>20000])
+        req20Rate = float(req20Num)/reqNum
         req10Num = len([i for i in v if i>10000])
         req10Rate = float(req10Num)/reqNum
         avg = sum(v) / len(v)
-        bDict[k] = [reqNum, avg, req30Num, req30Rate, req10Num, req10Rate]
+        bDict[k] = [reqNum, avg, req30Num, req30Rate, req20Num, req20Rate, req10Num, req10Rate]
     secStat = open(os.path.join(STAT_DIR, r'%s-URL-stat.csv' % DATE), 'w', encoding='utf-8')
-    secStat.write('URL, Requests, Average, 30+sec, 30+Percent, 10+Sec, 10+Percent\n')
+    secStat.write('URL, Requests, Average, 30+sec, 30+Percent, 20+sec, 20+Percent, 10+Sec, 10+Percent\n')
     for k in sorted(bDict): #, key=(lamba x:bDict[x][0]), reverse=True):
         v = ['%s' % i for i in bDict[k]]
         v = ', '.join(v)
@@ -97,12 +105,13 @@ if __name__ == '__main__':
     # aList = [i for i in aList if reCmp.search(i)]
     lineList = [line.split() for line in lineList]
     tmp = len(lineList)
-    lineList = [i for i in lineList if len(i) == 14]
+    lineList = [i for i in lineList if len(i) >= 14]
     print('Ignore :: ', tmp - len(lineList))
 
     buildSecStat(lineList)
     buildMinStat(lineList)
     buildMinStat_10s(lineList)
+    buildMinStat_20s(lineList)
     buildMinStat_30s(lineList)
     buildIPStat(lineList)
     buildURLStat(lineList)
