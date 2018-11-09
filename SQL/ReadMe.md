@@ -1,0 +1,1 @@
+- [Collect BID-ETW Trace](https://blogs.msdn.microsoft.com/spike/2010/10/22/simplified-steps-for-creating-bid-etw-traces-for-ado-net-and-sqlncli/)
