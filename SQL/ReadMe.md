@@ -1,1 +1,2 @@
+- [Basics first : "UDL Test"](https://blogs.msdn.microsoft.com/farukcelik/2007/12/31/basics-first-udl-test/)
 - [Collect BID-ETW Trace](https://blogs.msdn.microsoft.com/spike/2010/10/22/simplified-steps-for-creating-bid-etw-traces-for-ado-net-and-sqlncli/)
